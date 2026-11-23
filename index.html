@@ -5,29 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مقهى كايرو | نظام الإدارة</title>
   <style>
-    :root { --bg: #f4f6f8; --card: #ffffff; --primary: #2c3e50; --accent: #d35400; --text: #333; --border: #e0e4e8; --danger: #c0392b; --success: #27ae60; }
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --primary: #2c3e50;
+      --accent: #d35400;
+      --text: #333;
+      --border: #e0e4e8;
+      --danger: #c0392b;
+      --success: #27ae60;
+    }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 70px; }
-    header { background: var(--primary); color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     header h1 { margin: 0; font-size: 1.2rem; }
-    .nav-tabs { display: flex; background: #fff; border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 52px; z-index: 99; }
-    .nav-tabs button { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: #666; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; }
+    .nav-tabs {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      position: sticky;
+      top: 58px;
+      z-index: 99;
+    }
+    .nav-tabs button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-weight: bold;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+    }
     .nav-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
     .container { max-width: 960px; margin: 16px auto; padding: 0 12px; }
-    .card { background: var(--card); border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
     .card h3 { margin-top: 0; color: var(--primary); }
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .kpi-box { background: #fff; padding: 14px; border-radius: 8px; border-right: 4px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi-box {
+      background: #fff;
+      padding: 14px;
+      border-radius: 8px;
+      border-right: 4px solid var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
     .kpi-box.alert { border-right-color: var(--danger); background: #fff5f5; }
     .kpi-box.profit { border-right-color: var(--success); }
     .kpi-title { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
     .kpi-val { font-size: 1.15rem; font-weight: bold; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; }
-    input, select, button { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
     input:disabled { background: #eee; color: #888; }
     button.btn-primary { background: var(--accent); color: #fff; border: none; font-weight: bold; cursor: pointer; }
     button.btn-secondary { background: var(--primary); color: #fff; border: none; cursor: pointer; }
-    button.btn-danger { background: var(--danger); color: #fff; border: none; padding: 4px 8px; width: auto; font-size: 0.8rem; cursor: pointer; }
+    button.btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      width: auto;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
     button.btn-sm { padding: 4px 8px; width: auto; font-size: 0.8rem; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
     th, td { padding: 8px; border-bottom: 1px solid var(--border); text-align: right; }
@@ -35,18 +109,74 @@
     .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
     .badge-low { background: #fadbd8; color: var(--danger); }
     .hidden { display: none !important; }
-    #loginModal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 999; }
-    #loginBox { background: #fff; padding: 24px; border-radius: 10px; width: 90%; max-width: 380px; }
-    .loader { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; z-index: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    #loginModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    #loginBox {
+      background: #fff;
+      padding: 24px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 380px;
+    }
+    .loader {
+      position: fixed;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      z-index: 500;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
     .user-bar { font-size: 0.8rem; color: #ddd; }
 
     /* حاسبة فئات السوم الأوزبكي */
-    .denom-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 12px 0; }
-    .denom-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px; }
-    .denom-row { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; gap: 6px; }
+    .denom-box {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    .denom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .denom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      gap: 6px;
+    }
     .denom-row label { font-weight: bold; font-size: 0.85rem; white-space: nowrap; color: var(--primary); }
     .denom-row input { width: 75px; padding: 5px; text-align: center; }
-    .cash-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; background: #eef2f7; padding: 12px; border-radius: 8px; margin: 12px 0; text-align: center; }
+    .cash-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      background: #eef2f7;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      text-align: center;
+    }
     .cash-summary div span { display: block; font-size: 0.78rem; color: #555; }
     .cash-summary div strong { font-size: 1.05rem; }
   </style>
@@ -56,17 +186,17 @@
 <div id="loginModal">
   <div id="loginBox">
     <h2 style="margin-top:0; text-align:center;">☕ مقهى كايرو</h2>
-    <input type="text" id="lUser" placeholder="اسم الدخول" style="margin-bottom:10px;">
+    <input type="text" id="lUser" placeholder="اسم الدخول" style="margin-bottom:10px;" onkeydown="if(event.key==='Enter') doLogin()">
     <input type="password" id="lPass" placeholder="كلمة المرور" style="margin-bottom:14px;" onkeydown="if(event.key==='Enter') doLogin()">
-    <button class="btn-primary" onclick="doLogin()">تسجيل الدخول</button>
-    <p id="lErr" style="color:red; font-size:0.85rem; text-align:center;"></p>
-    
-    <!-- إعداد رابط السيرفر مباشرة من الشاشة -->
+    <button type="button" id="loginBtn" class="btn-primary" onclick="doLogin()">تسجيل الدخول</button>
+    <p id="lErr" style="color:red; font-size:0.85rem; text-align:center; min-height:20px;"></p>
+
     <details style="margin-top:14px; font-size:0.8rem; color:#666;">
       <summary style="cursor:pointer;">⚙️ إعداد رابط السيرفر (API URL)</summary>
       <div style="margin-top:8px;">
-        <input type="url" id="apiInput" placeholder="'https://script.google.com/macros/s/AKfycbwyeGm3kgb9uExG0-gxcqBC80hTGf2N2HqtoKIkcNZpDqO8o3y63kcwuKluY3zAQ2Ss/exec'" style="font-size:0.8rem; margin-bottom:6px;" dir="ltr">
-        <button class="btn-secondary btn-sm" onclick="saveApiUrl()" style="width:100%;">حفظ الرابط</button>
+        <input type="url" id="apiInput" placeholder="https://script.google.com/macros/s/AKfycbxtfrEXG7c_BJnOiLAcQ9F1OgZEC7WgzxxT6dc4Hs-Rcs1FIDPjvZmICnLdjKfLotDg/exec" style="font-size:0.8rem; margin-bottom:6px;" dir="ltr">
+        <button type="button" class="btn-secondary btn-sm" onclick="saveApiUrl()" style="width:100%;">حفظ الرابط</button>
+        <p id="apiMsg" style="color:green; font-size:0.78rem; margin:6px 0 0;"></p>
       </div>
     </details>
   </div>
@@ -79,18 +209,18 @@
   </div>
   <div style="display:flex; gap:8px; align-items:center;">
     <input type="month" id="monthPicker" onchange="loadData()" style="padding:5px 8px; width:auto;">
-    <button onclick="logout()" style="width:auto; padding:6px 12px; background:#c0392b; color:#fff; border:none;">خروج</button>
+    <button type="button" onclick="logout()" style="width:auto; padding:6px 12px; background:#c0392b; color:#fff; border:none; cursor:pointer;">خروج</button>
   </div>
 </header>
 
 <div class="nav-tabs">
-  <button class="active" onclick="switchTab('dash', this)">📊 الملخص</button>
-  <button onclick="switchTab('att', this)">⏱ الورديات</button>
-  <button onclick="switchTab('pur', this)">🛒 المشتريات</button>
-  <button onclick="switchTab('inv', this)">📦 المخزون والجرد</button>
-  <button onclick="switchTab('waste', this)">🗑️ الهالك</button>
-  <button onclick="switchTab('cash', this)">💵 النقدية</button>
-  <button onclick="switchTab('set', this)">⚙️ الإدارة والحساب</button>
+  <button type="button" class="active" onclick="switchTab('dash', this)">📊 الملخص</button>
+  <button type="button" onclick="switchTab('att', this)">⏱ الورديات</button>
+  <button type="button" onclick="switchTab('pur', this)">🛒 المشتريات</button>
+  <button type="button" onclick="switchTab('inv', this)">📦 المخزون والجرد</button>
+  <button type="button" onclick="switchTab('waste', this)">🗑️ الهالك</button>
+  <button type="button" onclick="switchTab('cash', this)">💵 النقدية</button>
+  <button type="button" onclick="switchTab('set', this)">⚙️ الإدارة والحساب</button>
 </div>
 
 <div id="loader" class="loader hidden">جارٍ التحميل...</div>
@@ -128,13 +258,13 @@
         <input type="time" id="attOut" value="16:00" title="وقت الانصراف">
         <input type="number" id="attBrk" placeholder="استراحة (دقائق)" value="0">
         <input type="text" id="attNote" placeholder="ملاحظة">
-        <button class="btn-primary" onclick="addAttendance()">حفظ الوردية</button>
+        <button type="button" class="btn-primary" onclick="addAttendance()">حفظ الوردية</button>
       </div>
     </div>
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3>سجل الورديات</h3>
-        <button class="btn-secondary btn-sm" onclick="exportCSV('attendance')">تصدير Excel</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="exportCSV('attendance')">تصدير Excel</button>
       </div>
       <div style="overflow-x:auto;"><table id="attTable"></table></div>
     </div>
@@ -154,13 +284,13 @@
         <input type="number" step="0.01" id="purQty" placeholder="الكمية">
         <input type="number" id="purAmt" placeholder="إجمالي المبلغ (UZS)">
         <input type="text" id="purSup" placeholder="المورد">
-        <button class="btn-primary" onclick="addPurchase()">إضافة للمخزون</button>
+        <button type="button" class="btn-primary" onclick="addPurchase()">إضافة للمخزون</button>
       </div>
     </div>
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3>سجل المشتريات</h3>
-        <button class="btn-secondary btn-sm" onclick="exportCSV('purchases')">تصدير Excel</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="exportCSV('purchases')">تصدير Excel</button>
       </div>
       <div style="overflow-x:auto;"><table id="purTable"></table></div>
     </div>
@@ -172,3 +302,698 @@
       <h3>تعريف صنف جديد</h3>
       <div class="form-grid">
         <input type="text" id="newGrp" list="grpList" placeholder="المجموعة">
+        <input type="text" id="newName" placeholder="اسم الصنف">
+        <input type="text" id="newUnit" placeholder="الوحدة (كجم، لتر...)">
+        <input type="number" step="0.01" id="newQty" placeholder="رصيد افتتاحي">
+        <input type="number" step="0.01" id="newMin" placeholder="الحد الأدنى للتنبيه">
+        <input type="number" id="newCost" placeholder="تكلفة الوحدة">
+        <button type="button" class="btn-primary" onclick="addInventoryItem()">إضافة صنف</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>تسجيل جرد مخزون</h3>
+      <div class="form-grid">
+        <input type="date" id="cntDate">
+        <select id="cntItem"></select>
+        <input type="number" step="0.01" id="cntQty" placeholder="الكمية المجرودة فعلياً">
+        <input type="text" id="cntNote" placeholder="ملاحظة الجرد">
+        <button type="button" class="btn-secondary" onclick="addStockCount()">اعتماد الجرد</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>أرصدة المخزون الحالية</h3>
+      <div style="overflow-x:auto;"><table id="invTable"></table></div>
+    </div>
+    <div class="card">
+      <h3>سجل الجرد</h3>
+      <div style="overflow-x:auto;"><table id="cntTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 5. الهالك -->
+  <div id="sec-waste" class="tab-sec hidden">
+    <div class="card">
+      <h3>تسجيل هالك</h3>
+      <div class="form-grid">
+        <input type="date" id="wstDate">
+        <select id="wstItem"></select>
+        <input type="number" step="0.01" id="wstQty" placeholder="الكمية المهدرة">
+        <input type="text" id="wstReason" placeholder="السبب (تلف، سكب، انتهاء صلاحية)">
+        <button type="button" class="btn-primary" onclick="addWaste()">خصم من المخزون</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>سجل الهالك</h3>
+      <div style="overflow-x:auto;"><table id="wasteTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 6. النقدية -->
+  <div id="sec-cash" class="tab-sec hidden">
+    <div class="card">
+      <h3>إغلاق وجرد الصندوق النقدي</h3>
+      <div class="form-grid">
+        <input type="date" id="cshDate">
+        <input type="number" id="cshOpen" placeholder="رصيد بداية اليوم" oninput="calcCashPreview()">
+        <input type="number" id="cshCashSales" placeholder="مبيعات كاش" oninput="calcCashPreview()">
+        <input type="number" id="cshCardSales" placeholder="مبيعات شبكة / بطاقة" oninput="calcCashPreview()">
+        <input type="number" id="cshExp" placeholder="مصروفات نقدية" oninput="calcCashPreview()">
+        <input type="number" id="cshOther" placeholder="مقبوضات/بنود أخرى" oninput="calcCashPreview()">
+        <input type="number" id="cshDeposit" placeholder="مبلغ التوريد / الإيداع" oninput="calcCashPreview()">
+        <input type="text" id="cshNote" placeholder="ملاحظة">
+      </div>
+
+      <div class="denom-box">
+        <strong>عدّ الفئات النقدية (الكاش الفعلي):</strong>
+        <div id="denomGrid" class="denom-grid"></div>
+      </div>
+
+      <div class="cash-summary">
+        <div><span>المتوقع بالصندوق</span><strong id="sumExpected">0</strong></div>
+        <div><span>الكاش الفعلي</span><strong id="sumActual">0</strong></div>
+        <div><span>الفرق (عجز/زيادة)</span><strong id="sumDiff">0</strong></div>
+        <div><span>الرصيد المتبقي</span><strong id="sumClosing">0</strong></div>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="addCashCount()">حفظ جرد النقدية</button>
+    </div>
+
+    <div class="card">
+      <h3>سجل جرد النقدية</h3>
+      <div style="overflow-x:auto;"><table id="cashTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 7. الإدارة والحساب -->
+  <div id="sec-set" class="tab-sec hidden">
+    <div id="ownerOnlyBox">
+      <div class="card">
+        <h3>إضافة موظف جديد</h3>
+        <div class="form-grid">
+          <input type="text" id="empName" placeholder="اسم الموظف">
+          <input type="text" id="empPos" placeholder="الوظيفة (باريستا، محاسب...)">
+          <input type="number" id="empSal" placeholder="الراتب الشهري">
+          <button type="button" class="btn-primary" onclick="addEmployee()">إضافة موظف</button>
+        </div>
+        <div style="overflow-x:auto;"><table id="empTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h3>إضافة مستخدم للنظام</h3>
+        <div class="form-grid">
+          <input type="text" id="usrName" placeholder="الاسم الظاهر">
+          <input type="text" id="usrLogin" placeholder="اسم الدخول (بالإنجليزية)">
+          <input type="password" id="usrPass" placeholder="كلمة المرور (6 أحرف فأكثر)">
+          <select id="usrRole">
+            <option value="manager">مدير (manager)</option>
+            <option value="owner">مالك (owner)</option>
+          </select>
+          <button type="button" class="btn-secondary" onclick="addUser()">إنشاء حساب</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>إعدادات النظام</h3>
+        <div class="form-grid">
+          <div>
+            <label style="font-size:0.8rem;">ساعات العمل القياسية</label>
+            <input type="number" id="setStdHours" value="8">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;">معامل الإضافي (OT)</label>
+            <input type="number" step="0.1" id="setOtMult" value="1.5">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;">أيام العمل الشهرية</label>
+            <input type="number" id="setWorkDays" value="26">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;">احتساب الإجازات مدفوعة (1 نعم / 0 لا)</label>
+            <input type="number" id="setPayLeave" value="1">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;">إظهار التكاليف للمدير (1 نعم / 0 لا)</label>
+            <input type="number" id="setMgrCost" value="0">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;">العملة</label>
+            <input type="text" id="setCurrency" value="UZS">
+          </div>
+        </div>
+        <button type="button" class="btn-primary" style="margin-top:12px;" onclick="saveSettings()">حفظ الإعدادات</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwyeGm3kgb9uExG0-gxcqBC80hTGf2N2HqtoKIkcNZpDqO8o3y63kcwuKluY3zAQ2Ss/exec';
+  const DENOMS = [200000, 100000, 50000, 20000, 10000, 5000, 2000, 1000];
+
+  let STATE = {
+    token: localStorage.getItem('cairo_token') || '',
+    me: null,
+    data: null
+  };
+
+  function getApiUrl() {
+    return (localStorage.getItem('cairo_api_url') || DEFAULT_API_URL).trim();
+  }
+
+  function saveApiUrl() {
+    const val = document.getElementById('apiInput').value.trim();
+    const msg = document.getElementById('apiMsg');
+    if (!val || !val.startsWith('https://')) {
+      msg.style.color = 'red';
+      msg.textContent = 'أدخل رابط Web App صحيح يبدأ بـ https://';
+      return;
+    }
+    localStorage.setItem('cairo_api_url', val);
+    msg.style.color = 'green';
+    msg.textContent = 'تم حفظ رابط السيرفر بنجاح';
+  }
+
+  function setLoading(show) {
+    document.getElementById('loader').classList.toggle('hidden', !show);
+  }
+
+  function showLoginErr(msg) {
+    document.getElementById('lErr').textContent = msg || '';
+  }
+
+  async function apiCall(action, payload = {}, useAuth = true) {
+    const url = getApiUrl();
+    if (!url) throw new Error('رابط السيرفر غير مضبوط');
+
+    const body = {
+      action: action,
+      payload: payload,
+      auth: useAuth ? { token: STATE.token } : {}
+    };
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+
+    const text = await res.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      throw new Error('استجابة غير صالحة من السيرفر: ' + text.slice(0, 120));
+    }
+
+    if (json && json.error) {
+      if (String(json.error).indexOf('AUTH:') === 0) {
+        logout(false);
+      }
+      throw new Error(String(json.error).replace(/^AUTH:/, ''));
+    }
+
+    return json;
+  }
+
+  async function doLogin() {
+    const login = document.getElementById('lUser').value.trim();
+    const password = document.getElementById('lPass').value;
+    const btn = document.getElementById('loginBtn');
+
+    showLoginErr('');
+    if (!login || !password) {
+      showLoginErr('يرجى إدخال اسم الدخول وكلمة المرور');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جارٍ التحقق...';
+    setLoading(true);
+
+    try {
+      const res = await apiCall('login', { login, password }, false);
+      STATE.token = res.token;
+      STATE.me = res.me;
+      localStorage.setItem('cairo_token', res.token);
+
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('userInfo').textContent = `${res.me.name} (${res.me.role})`;
+      document.getElementById('ownerOnlyBox').classList.toggle('hidden', res.me.role !== 'owner');
+
+      await loadData();
+    } catch (err) {
+      showLoginErr(err.message || 'فشل تسجيل الدخول');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'تسجيل الدخول';
+      setLoading(false);
+    }
+  }
+
+  function logout(clearStorage = true) {
+    STATE.token = '';
+    STATE.me = null;
+    if (clearStorage) localStorage.removeItem('cairo_token');
+    document.getElementById('loginModal').classList.remove('hidden');
+    document.getElementById('lPass').value = '';
+    showLoginErr('');
+  }
+
+  function switchTab(tabId, btnEl) {
+    document.querySelectorAll('.tab-sec').forEach(s => s.classList.add('hidden'));
+    document.getElementById('sec-' + tabId).classList.remove('hidden');
+    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+  }
+
+  function toggleShiftTimes() {
+    const isWork = document.getElementById('attType').value === 'work';
+    document.getElementById('attIn').disabled = !isWork;
+    document.getElementById('attOut').disabled = !isWork;
+    document.getElementById('attBrk').disabled = !isWork;
+  }
+
+  function initDenomGrid() {
+    const grid = document.getElementById('denomGrid');
+    grid.innerHTML = DENOMS.map(d => `
+      <div class="denom-row">
+        <label>${d.toLocaleString()}</label>
+        <input type="number" min="0" data-denom="${d}" value="0" oninput="calcCashPreview()">
+      </div>
+    `).join('');
+  }
+
+  function getDenomActual() {
+    let total = 0;
+    document.querySelectorAll('#denomGrid input[data-denom]').forEach(inp => {
+      const d = Number(inp.getAttribute('data-denom')) || 0;
+      const c = Number(inp.value) || 0;
+      total += d * c;
+    });
+    return total;
+  }
+
+  function getDenomText() {
+    const parts = [];
+    document.querySelectorAll('#denomGrid input[data-denom]').forEach(inp => {
+      const d = Number(inp.getAttribute('data-denom')) || 0;
+      const c = Number(inp.value) || 0;
+      if (c > 0) parts.push(`${d}x${c}`);
+    });
+    return parts.join(', ');
+  }
+
+  function calcCashPreview() {
+    const opening = Number(document.getElementById('cshOpen').value) || 0;
+    const cashSales = Number(document.getElementById('cshCashSales').value) || 0;
+    const expenses = Number(document.getElementById('cshExp').value) || 0;
+    const deposit = Number(document.getElementById('cshDeposit').value) || 0;
+
+    const expected = opening + cashSales - expenses;
+    const actual = getDenomActual();
+    const diff = actual - expected;
+    const closing = actual - deposit;
+
+    document.getElementById('sumExpected').textContent = expected.toLocaleString();
+    document.getElementById('sumActual').textContent = actual.toLocaleString();
+    document.getElementById('sumDiff').textContent = diff.toLocaleString();
+    document.getElementById('sumClosing').textContent = closing.toLocaleString();
+  }
+
+  async function loadData() {
+    if (!STATE.token) return;
+    setLoading(true);
+    try {
+      const month = document.getElementById('monthPicker').value;
+      const data = await apiCall('getAll', { month });
+      STATE.data = data;
+      renderAll();
+    } catch (err) {
+      alert(err.message || 'تعذر تحميل البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function fmtMoney(v) {
+    if (v === null || v === undefined) return '—';
+    const cur = (STATE.data && STATE.data.settings && STATE.data.settings.currency) || '';
+    return Number(v).toLocaleString() + (cur ? ' ' + cur : '');
+  }
+
+  function renderAll() {
+    const d = STATE.data;
+    if (!d) return;
+
+    // KPIs
+    const k = d.kpis || {};
+    document.getElementById('kpiContainer').innerHTML = `
+      <div class="kpi-box"><div class="kpi-title">إجمالي المبيعات</div><div class="kpi-val">${fmtMoney(k.sales)}</div></div>
+      <div class="kpi-box"><div class="kpi-title">المشتريات</div><div class="kpi-val">${fmtMoney(k.purchases)}</div></div>
+      <div class="kpi-box"><div class="kpi-title">تكلفة الورديات</div><div class="kpi-val">${fmtMoney(k.labor)}</div></div>
+      <div class="kpi-box alert"><div class="kpi-title">الهالك</div><div class="kpi-val">${fmtMoney(k.waste)}</div></div>
+      <div class="kpi-box profit"><div class="kpi-title">الصافي التقديري</div><div class="kpi-val">${fmtMoney(k.net)}</div></div>
+    `;
+
+    // Low Stock
+    document.querySelector('#lowStockTable tbody').innerHTML = (d.lowStock || []).map(r => `
+      <tr>
+        <td>${r.name}</td>
+        <td><span class="badge badge-low">${r.qty} ${r.unit}</span></td>
+        <td>${r.min_qty} ${r.unit}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="3">لا توجد نواقص حالياً</td></tr>';
+
+    // Employees Select & Table
+    const activeEmps = (d.employees || []).filter(e => String(e.active) !== 'no');
+    document.getElementById('attEmp').innerHTML = activeEmps.map(e =>
+      `<option value="${e.id}">${e.name}</option>`
+    ).join('');
+
+    document.getElementById('empTable').innerHTML = `
+      <thead><tr><th>الاسم</th><th>الوظيفة</th><th>الراتب الشهري</th><th>حذف</th></tr></thead>
+      <tbody>${(d.employees || []).map(e => `
+        <tr>
+          <td>${e.name}</td>
+          <td>${e.position}</td>
+          <td>${fmtMoney(e.monthly_salary)}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('Employees','${e.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Datalists & Inventory Selects
+    const grps = [...new Set((d.inventory || []).map(i => i.grp).filter(Boolean))];
+    document.getElementById('grpList').innerHTML = grps.map(g => `<option value="${g}">`).join('');
+    document.getElementById('itemList').innerHTML = (d.inventory || []).map(i => `<option value="${i.name}">`).join('');
+
+    const invOpts = (d.inventory || []).map(i => `<option value="${i.id}">${i.name} (${i.qty} ${i.unit})</option>`).join('');
+    document.getElementById('cntItem').innerHTML = invOpts;
+    document.getElementById('wstItem').innerHTML = invOpts;
+
+    // Attendance Table
+    document.getElementById('attTable').innerHTML = `
+      <thead><tr><th>التاريخ</th><th>الموظف</th><th>النوع</th><th>الساعات</th><th>التكلفة</th><th>ملاحظة</th><th>حذف</th></tr></thead>
+      <tbody>${(d.attendance || []).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.emp_name}</td>
+          <td>${r.type}</td>
+          <td>${r.worked_h}</td>
+          <td>${d.canCost ? fmtMoney(r.cost) : '—'}</td>
+          <td>${r.note || ''}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('Attendance','${r.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Purchases Table
+    document.getElementById('purTable').innerHTML = `
+      <thead><tr><th>التاريخ</th><th>الصنف</th><th>الكمية</th><th>المبلغ</th><th>المورد</th><th>حذف</th></tr></thead>
+      <tbody>${(d.purchases || []).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.item_name}</td>
+          <td>${r.qty} ${r.unit}</td>
+          <td>${d.canCost ? fmtMoney(r.amount) : '—'}</td>
+          <td>${r.supplier || ''}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('Purchases','${r.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Inventory Table
+    document.getElementById('invTable').innerHTML = `
+      <thead><tr><th>المجموعة</th><th>الصنف</th><th>الرصيد</th><th>الحد الأدنى</th><th>آخر تكلفة</th></tr></thead>
+      <tbody>${(d.inventory || []).map(r => `
+        <tr>
+          <td>${r.grp}</td>
+          <td>${r.name}</td>
+          <td>${r.qty} ${r.unit}</td>
+          <td>${r.min_qty} ${r.unit}</td>
+          <td>${d.canCost ? fmtMoney(r.last_cost) : '—'}</td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Stock Counts Table
+    document.getElementById('cntTable').innerHTML = `
+      <thead><tr><th>التاريخ</th><th>الصنف</th><th>النظامي</th><th>الفعلي</th><th>الفرق</th><th>حذف</th></tr></thead>
+      <tbody>${(d.stockCounts || []).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.item_name}</td>
+          <td>${r.system_qty}</td>
+          <td>${r.counted_qty}</td>
+          <td>${r.diff}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('StockCounts','${r.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Waste Table
+    document.getElementById('wasteTable').innerHTML = `
+      <thead><tr><th>التاريخ</th><th>الصنف</th><th>الكمية</th><th>التكلفة</th><th>السبب</th><th>حذف</th></tr></thead>
+      <tbody>${(d.waste || []).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.item_name}</td>
+          <td>${r.qty} ${r.unit}</td>
+          <td>${d.canCost ? fmtMoney(r.cost_value) : '—'}</td>
+          <td>${r.reason || ''}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('Waste','${r.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Cash Table
+    document.getElementById('cashTable').innerHTML = `
+      <thead><tr><th>التاريخ</th><th>كاش</th><th>شبكة</th><th>المتوقع</th><th>الفعلي</th><th>الفرق</th><th>حذف</th></tr></thead>
+      <tbody>${(d.cashCounts || []).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${fmtMoney(r.cash_sales)}</td>
+          <td>${fmtMoney(r.card_sales)}</td>
+          <td>${fmtMoney(r.expected)}</td>
+          <td>${fmtMoney(r.actual)}</td>
+          <td>${fmtMoney(r.diff)}</td>
+          <td><button type="button" class="btn-danger" onclick="delRow('CashCounts','${r.id}')">حذف</button></td>
+        </tr>
+      `).join('')}</tbody>
+    `;
+
+    // Settings inputs
+    if (d.settings) {
+      document.getElementById('setStdHours').value = d.settings.std_hours;
+      document.getElementById('setOtMult').value = d.settings.ot_mult;
+      document.getElementById('setWorkDays').value = d.settings.work_days;
+      document.getElementById('setPayLeave').value = d.settings.pay_leave;
+      document.getElementById('setMgrCost').value = d.settings.manager_sees_cost;
+      document.getElementById('setCurrency').value = d.settings.currency;
+    }
+  }
+
+  function autoFillUnit() {
+    const name = document.getElementById('purName').value.trim().toLowerCase();
+    const item = ((STATE.data && STATE.data.inventory) || []).find(i => String(i.name).toLowerCase() === name);
+    if (item) {
+      document.getElementById('purUnit').value = item.unit || '';
+      document.getElementById('purGrp').value = item.grp || '';
+    }
+  }
+
+  async function addEmployee() {
+    try {
+      await apiCall('addEmployee', {
+        name: document.getElementById('empName').value,
+        position: document.getElementById('empPos').value,
+        monthly_salary: document.getElementById('empSal').value
+      });
+      document.getElementById('empName').value = '';
+      document.getElementById('empPos').value = '';
+      document.getElementById('empSal').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addAttendance() {
+    try {
+      await apiCall('addAttendance', {
+        date: document.getElementById('attDate').value,
+        emp_id: document.getElementById('attEmp').value,
+        type: document.getElementById('attType').value,
+        check_in: document.getElementById('attIn').value,
+        check_out: document.getElementById('attOut').value,
+        break_min: document.getElementById('attBrk').value,
+        note: document.getElementById('attNote').value
+      });
+      document.getElementById('attNote').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addPurchase() {
+    try {
+      await apiCall('addPurchase', {
+        date: document.getElementById('purDate').value,
+        grp: document.getElementById('purGrp').value,
+        item_name: document.getElementById('purName').value,
+        unit: document.getElementById('purUnit').value,
+        qty: document.getElementById('purQty').value,
+        amount: document.getElementById('purAmt').value,
+        supplier: document.getElementById('purSup').value
+      });
+      document.getElementById('purQty').value = '';
+      document.getElementById('purAmt').value = '';
+      document.getElementById('purSup').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addInventoryItem() {
+    try {
+      await apiCall('addInventoryItem', {
+        grp: document.getElementById('newGrp').value,
+        name: document.getElementById('newName').value,
+        unit: document.getElementById('newUnit').value,
+        qty: document.getElementById('newQty').value,
+        min_qty: document.getElementById('newMin').value,
+        last_cost: document.getElementById('newCost').value
+      });
+      document.getElementById('newName').value = '';
+      document.getElementById('newQty').value = '';
+      document.getElementById('newMin').value = '';
+      document.getElementById('newCost').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addStockCount() {
+    try {
+      await apiCall('addStockCount', {
+        date: document.getElementById('cntDate').value,
+        item_id: document.getElementById('cntItem').value,
+        counted_qty: document.getElementById('cntQty').value,
+        note: document.getElementById('cntNote').value
+      });
+      document.getElementById('cntQty').value = '';
+      document.getElementById('cntNote').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addWaste() {
+    try {
+      await apiCall('addWaste', {
+        date: document.getElementById('wstDate').value,
+        item_id: document.getElementById('wstItem').value,
+        qty: document.getElementById('wstQty').value,
+        reason: document.getElementById('wstReason').value
+      });
+      document.getElementById('wstQty').value = '';
+      document.getElementById('wstReason').value = '';
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addCashCount() {
+    try {
+      await apiCall('addCashCount', {
+        date: document.getElementById('cshDate').value,
+        opening: document.getElementById('cshOpen').value,
+        cash_sales: document.getElementById('cshCashSales').value,
+        card_sales: document.getElementById('cshCardSales').value,
+        expenses: document.getElementById('cshExp').value,
+        other: document.getElementById('cshOther').value,
+        actual: getDenomActual(),
+        deposit: document.getElementById('cshDeposit').value,
+        denoms: getDenomText(),
+        note: document.getElementById('cshNote').value
+      });
+      document.querySelectorAll('#denomGrid input[data-denom]').forEach(i => i.value = 0);
+      calcCashPreview();
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function addUser() {
+    try {
+      await apiCall('addUser', {
+        name: document.getElementById('usrName').value,
+        login: document.getElementById('usrLogin').value,
+        password: document.getElementById('usrPass').value,
+        role: document.getElementById('usrRole').value
+      });
+      document.getElementById('usrName').value = '';
+      document.getElementById('usrLogin').value = '';
+      document.getElementById('usrPass').value = '';
+      alert('تم إنشاء الحساب بنجاح');
+    } catch (e) { alert(e.message); }
+  }
+
+  async function saveSettings() {
+    try {
+      await apiCall('saveSettings', {
+        std_hours: document.getElementById('setStdHours').value,
+        ot_mult: document.getElementById('setOtMult').value,
+        work_days: document.getElementById('setWorkDays').value,
+        pay_leave: document.getElementById('setPayLeave').value,
+        manager_sees_cost: document.getElementById('setMgrCost').value,
+        currency: document.getElementById('setCurrency').value
+      });
+      alert('تم حفظ الإعدادات');
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function delRow(sheet, id) {
+    if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+    try {
+      await apiCall('deleteRow', { sheet, id });
+      await loadData();
+    } catch (e) { alert(e.message); }
+  }
+
+  function exportCSV(key) {
+    const rows = (STATE.data && STATE.data[key]) || [];
+    if (!rows.length) {
+      alert('لا توجد بيانات للتصدير');
+      return;
+    }
+    const headers = Object.keys(rows[0]).filter(h => h !== '_row');
+    const csv = [
+      headers.join(','),
+      ...rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${key}_${document.getElementById('monthPicker').value || 'export'}.csv`;
+    link.click();
+  }
+
+  // تهيئة أولية عند فتح الصفحة
+  (function initPage() {
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const monthStr = now.toISOString().slice(0, 7);
+
+    document.getElementById('monthPicker').value = monthStr;
+    ['attDate', 'purDate', 'cntDate', 'wstDate', 'cshDate'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = todayStr;
+    });
+
+    document.getElementById('apiInput').value = getApiUrl();
+    initDenomGrid();
+    calcCashPreview();
+
+    if (STATE.token) {
+      loadData().catch(() => logout(false));
+    }
+  })();
+</script>
+</body>
+</html>
