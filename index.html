@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<style>
+:root{--bg:#fff;--tx:#111;--hint:#777;--card:#f2f3f5;--btn:#2a7de1;--btx:#fff;--red:#d33;--ok:#2a9d4a}
+@media(prefers-color-scheme:dark){:root{--bg:#17181a;--tx:#eee;--hint:#9a9a9a;--card:#26282b;--btn:#4a95f0}}
+header,main{max-width:760px;margin-inline:auto}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--tx);padding-bottom:72px;font-size:15px}
+header{padding:12px 14px 4px}.hrow{display:flex;justify-content:space-between;align-items:center;gap:8px}h1{font-size:17px;margin:0}
+small,.hint{color:var(--hint)}
+nav{position:fixed;bottom:0;left:0;right:0;margin:0 auto;max-width:760px;display:flex;background:var(--card);border-top:1px solid #8883;z-index:5}
+nav button{flex:1;padding:10px 2px;border:0;background:none;color:var(--hint);font-size:12px;line-height:1.5}nav button.on{color:var(--btn);font-weight:700}
+main{padding:6px 12px}.card{background:var(--card);border-radius:12px;padding:11px;margin:7px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi b{display:block;font-size:19px}.neg{color:var(--red);font-weight:700}.pos{color:var(--ok);font-weight:700}
+button.p{background:var(--btn);color:var(--btx);border:0;border-radius:10px;padding:10px 14px;font-size:14px}
+button.s{background:none;border:1px solid var(--btn);color:var(--btn);border-radius:8px;padding:6px 10px;font-size:13px}
+button.d{background:none;border:0;color:var(--red);font-size:13px;padding:4px}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #8885;background:var(--bg);color:var(--tx);font-size:15px;margin:3px 0 8px}
+label{font-size:13px;color:var(--hint)}.top{display:flex;gap:8px;margin:8px 0}.top input,.top select{margin:0}
+.seg{display:flex;background:var(--card);border-radius:10px;padding:3px;margin:8px 0}.seg button{flex:1;border:0;background:none;color:var(--hint);padding:8px;border-radius:8px;font-size:14px}
+.seg button.on{background:var(--btn);color:var(--btx)}
+#modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:10}
+#modal .sheet{background:var(--bg);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:14px}
+#toast{position:fixed;top:10px;inset-inline:12px;background:#222;color:#fff;padding:10px;border-radius:10px;display:none;z-index:20;text-align:center}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}th,td{padding:7px 8px;border-bottom:1px solid #8883;text-align:center}
+th{color:var(--hint);font-weight:600}td:first-child,th:first-child{text-align:right;position:sticky;inset-inline-start:0;background:var(--bg)}tr.tot td{font-weight:700;background:var(--card)}
+.tag{font-size:11px;padding:2px 7px;border-radius:20px;background:#8882}.day{font-weight:700;margin:12px 4px 2px}.gh{font-weight:700;margin:14px 4px 2px;color:var(--btn)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow"><h1>☕ مقهى كايرو</h1><span><input type="month" id="mo" style="width:auto;margin:0;padding:6px" onchange="MONTH=this.value;load()"> <button class="s" id="gear" style="display:none" onclick="fSettings()">⚙</button> <button class="s" id="usr" style="display:none" onclick="fAccount()">👤</button></span></div>
+  <small id="who"></small>
+</header>
+<main id="view"><p class="hint">جارٍ التحميل…</p></main>
+<nav id="nav" style="display:none">
+  <button data-t="shift" class="on">⏱<br>الورديات</button><button data-t="buy">🛒<br>المشتريات</button>
+  <button data-t="inv">📦<br>الجرد</button><button data-t="cash">💵<br>النقدية</button>
+</nav>
+<div id="modal"><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+
+<script>
+const TYPES = {work:'حضور', annual:'إجازة سنوية', sick:'إجازة مرضية', unpaid:'بدون راتب', absent:'غياب', off:'راحة'};
+const UNITS = ['كجم','جرام','لتر','قطعة','علبة','كرتون','كيس','حزمة','دزينة'];
+const DEN = [200000,100000,50000,20000,10000,5000,2000,1000];
+let TOKEN = ''; try { TOKEN = localStorage.getItem('cc_token') || ''; } catch (x) {}
+let DB = null, TAB = 'shift', MONTH = new Date(Date.now() - new Date().getTimezoneOffset()*6e4).toISOString().slice(0,7);
+let SUB = {shift:'log', inv:'items'}, GF = '', Q = '', COUNTING = false, CNT = {}, CDATE = '', CNOTE = '';
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N = s => { const v = Number(String(s == null ? '' : s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g,'.').replace(/[,٬\s]/g,'')); return isFinite(v) ? v : 0; };
+const fmt = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 0});
+const fq = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 3});
+const fh = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const cur = () => DB ? DB.S.currency : 'UZS';
+const sgn = n => n > 0 ? '+' : '';
+const cls = n => n < 0 ? 'neg' : n > 0 ? 'pos' : '';
+const val = id => document.getElementById(id).value;
+const canDel = r => DB.me.role === 'owner' || r.by === DB.me.name;
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwyeGm3kgb9uExG0-gxcqBC80hTGf2N2HqtoKIkcNZpDqO8o3y63kcwuKluY3zAQ2Ss/exec';   // the /exec URL of the Apps Script web app
+async function call(action, payload) {
+  const r = await fetch(API_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({auth: {token: TOKEN}, action, payload: Object.assign({month: MONTH}, payload || {})})});
+  const o = await r.json();
+  if (o.error) { const auth = o.error.indexOf('AUTH:') === 0, e = new Error(auth ? o.error.slice(5) : o.error); e.auth = auth; throw e; }
+  return o;
+}
+function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3200); }
+async function load() {
+  document.getElementById('mo').value = MONTH;
+  if (!TOKEN) return showLogin('');
+  try {
+    DB = await call('getAll');
+    document.getElementById('who').textContent = DB.me.name + ' • ' + (DB.me.role === 'owner' ? 'المالك' : 'مسؤول المطعم');
+    document.getElementById('gear').style.display = DB.me.role === 'owner' ? '' : 'none';
+    document.getElementById('usr').style.display = '';
+    document.getElementById('nav').style.display = 'flex';
+    render();
+  } catch (e) {
+    if (e.auth) showLogin(e.message); else document.getElementById('view').innerHTML = '<div class="card neg">' + esc(e.message) + '</div>';
+  }
+}
+function fail(e) { if (e.auth) showLogin(e.message); else toast('⚠ ' + e.message); }
+function showLogin(msg) {
+  DB = null; TOKEN = ''; try { localStorage.removeItem('cc_token'); } catch (x) {}
+  closeForm();
+  ['nav', 'gear', 'usr'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('who').textContent = '';
+  document.getElementById('view').innerHTML = `<div class="card"><b>تسجيل الدخول</b>${msg ? `<p class="neg">${esc(msg)}</p>` : ''}
+  <label>اسم الدخول</label><input id="lg_u" autocomplete="username" autocapitalize="none">
+  <label>كلمة المرور</label><input id="lg_p" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+  <button class="p" style="width:100%" onclick="doLogin()">دخول</button></div>`;
+}
+async function doLogin() {
+  try { const o = await call('login', {login: val('lg_u'), password: val('lg_p')}); TOKEN = o.token; try { localStorage.setItem('cc_token', TOKEN); } catch (x) {} await load(); }
+  catch (e) { showLogin(e.message); }
+}
+function fAccount() {
+  document.getElementById('sheet').innerHTML = `<div class="row"><b>👤 ${esc(DB.me.name)}</b><button class="d" onclick="closeForm()">إغلاق</button></div>
+  <div class="gh">تغيير كلمة المرور</div><label>الحالية</label><input id="pw_o" type="password" autocomplete="current-password">
+  <label>الجديدة (8 أحرف فأكثر)</label><input id="pw_n" type="password" autocomplete="new-password">
+  <button class="p" style="width:100%" onclick="act('changePassword',{old_password:val('pw_o'),new_password:val('pw_n')},'تم تغيير كلمة المرور ✓')">تغيير</button>
+  <button class="s" style="width:100%;margin-top:16px" onclick="logout()">تسجيل الخروج</button>`;
+  document.getElementById('modal').style.display = 'flex';
+}
+async function logout() { try { await call('logout'); } catch (x) {} showLogin(''); }
+async function act(action, payload, msg) {
+  try { await call(action, payload); closeForm(); toast(msg || 'تم الحفظ ✓'); await load(); } catch (e) { fail(e); }
+}
+function del(a, id) { if (confirm('تأكيد الحذف؟')) act(a, {id}, 'تم الحذف'); }
+
+/* ---------- generic form ---------- */
+function openForm(title, fields, onSubmit) {
+  const h = fields.map(f => {
+    const id = 'f_' + f.k, v = f.v == null ? '' : f.v; let el;
+    if (f.opts) el = `<select id="${id}">${f.opts.map(o => `<option value="${esc(o[0])}" ${o[0] == v ? 'selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+    else el = `<input id="${id}" type="${f.t === 'num' ? 'text' : (f.t || 'text')}" ${f.t === 'num' ? 'inputmode="decimal"' : ''} ${f.list ? `list="dl_${f.k}"` : ''} value="${esc(v)}" ${f.ph ? `placeholder="${esc(f.ph)}"` : ''}>` +
+      (f.list ? `<datalist id="dl_${f.k}">${f.list.map(x => `<option value="${esc(x)}">`).join('')}</datalist>` : '');
+    return `<div id="w_${f.k}"><label>${esc(f.l)}</label>${el}</div>`;
+  }).join('');
+  document.getElementById('sheet').innerHTML = `<div class="row"><b>${esc(title)}</b><button class="d" onclick="closeForm()">إغلاق</button></div>${h}<button class="p" style="width:100%" id="sv">حفظ</button>`;
+  document.getElementById('modal').style.display = 'flex';
+  const get = k => document.getElementById('f_' + k).value, set = (k, x) => { document.getElementById('f_' + k).value = x; };
+  const refresh = () => fields.forEach(f => { if (f.when) document.getElementById('w_' + f.k).style.display = f.when(get) ? '' : 'none'; });
+  fields.forEach(f => ['input','change'].forEach(ev => document.getElementById('f_' + f.k).addEventListener(ev, () => { refresh(); f.on && f.on(get, set); })));
+  refresh();
+  document.getElementById('sv').onclick = () => { const o = {}; fields.forEach(f => o[f.k] = get(f.k)); onSubmit(o); };
+}
+function closeForm() { document.getElementById('modal').style.display = 'none'; }
+function seg(key, items) { return `<div class="seg">${items.map(i => `<button class="${SUB[key] === i[0] ? 'on' : ''}" onclick="SUB['${key}']='${i[0]}';render()">${i[1]}</button>`).join('')}</div>`; }
+
+function render() {
+  const v = document.getElementById('view');
+  v.innerHTML = TAB === 'inv' && COUNTING ? vCount() : ({shift: vShift, buy: vBuy, inv: vInv, cash: vCash})[TAB]();
+}
+
+/* ================= 1) SHIFTS ================= */
+function report() {
+  const z = n => ({name: n, days: 0, reg: 0, ot: 0, annual: 0, sick: 0, loss: 0, costW: 0, costL: 0}), m = {};
+  DB.employees.forEach(e => m[e.id] = z(e.name));
+  DB.attendance.forEach(a => {
+    const r = m[a.emp_id] || (m[a.emp_id] = z(a.emp_name)), c = Number(a.cost) || 0;
+    if (a.type === 'work') { r.days++; r.reg += Number(a.regular_h); r.ot += Number(a.ot_h); r.costW += c; }
+    else if (a.type === 'annual') { r.annual++; r.costL += c; }
+    else if (a.type === 'sick') { r.sick++; r.costL += c; }
+    else if (a.type === 'unpaid' || a.type === 'absent') r.loss++;
+  });
+  const rows = Object.values(m).filter(r => r.days || r.annual || r.sick || r.loss), t = z('الإجمالي');
+  rows.forEach(r => Object.keys(t).forEach(k => { if (k !== 'name') t[k] += r[k]; }));
+  return {rows, t};
+}
+function vShift() {
+  const R = report(), T = R.t, cc = DB.canCost;
+  let h = `<div class="top"><button class="p" style="width:100%" onclick="fAtt()">+ تسجيل حضور / إجازة</button></div>
+  <div class="grid"><div class="card kpi"><small>صافي ساعات العمل</small><b>${fh(T.reg + T.ot)}</b><small>منها إضافي ${fh(T.ot)}</small></div>
+  ${cc ? `<div class="card kpi"><small>تكلفة الشهر (حضور فعلي)</small><b>${fmt(T.costW)}</b><small>${cur()} • +إجازات مدفوعة ${fmt(T.costL)}</small></div>` : `<div class="card kpi"><small>أيام العمل المسجلة</small><b>${T.days}</b><small>إجازات ${T.annual + T.sick} • غياب ${T.loss}</small></div>`}</div>`
+  + seg('shift', [['log','السجل'], ['rep','تقرير الشهر']]);
+  if (!DB.employees.length) return h + '<div class="card hint">لا يوجد موظفون. أضفهم من ⚙ (المالك).</div>';
+  if (SUB.shift === 'rep') {
+    const cols = [['الموظف', r => esc(r.name)], ['أيام العمل', r => r.days], ['ساعات عادية', r => fh(r.reg)], ['إضافي', r => fh(r.ot)],
+      ['صافي الساعات', r => `<b>${fh(r.reg + r.ot)}</b>`], ['سنوية', r => r.annual], ['مرضية', r => r.sick], ['غياب/بلا راتب', r => r.loss]];
+    if (cc) cols.push(['تكلفة الحضور', r => fmt(r.costW)], ['إجازات مدفوعة', r => fmt(r.costL)], ['الإجمالي', r => `<b>${fmt(r.costW + r.costL)}</b>`]);
+    const body = R.rows.map(r => `<tr>${cols.map(c => `<td>${c[1](r)}</td>`).join('')}</tr>`).join('');
+    return h + `<div class="tw"><table><tr>${cols.map(c => `<th>${c[0]}</th>`).join('')}</tr>${body}<tr class="tot">${cols.map(c => `<td>${c[1](T)}</td>`).join('')}</tr></table></div>
+    <p class="hint">التكلفة = ساعات عادية × أجر الساعة + إضافي × أجر الساعة × ${DB.S.ot_mult}. أجر الساعة = الراتب ÷ (${DB.S.work_days} يوم × ${DB.S.std_hours} ساعة).</p>`;
+  }
+  let d = '';
+  DB.attendance.forEach(a => {
+    if (a.date !== d) { d = a.date; h += `<div class="day">${esc(d)}${d === today() ? ' (اليوم)' : ''}</div>`; }
+    const w = a.type === 'work';
+    h += `<div class="card"><div class="row"><b>${esc(a.emp_name)}</b><span class="tag">${TYPES[a.type]}</span></div>
+    <div class="row"><small>${w ? `${esc(a.check_in)} – ${esc(a.check_out)} • صافي ${fh(a.worked_h)}س${Number(a.ot_h) ? ` • إضافي ${fh(a.ot_h)}س` : ''}` : esc(a.note)}</small>
+    <span>${DB.canCost && Number(a.cost) ? `<small>${fmt(a.cost)}</small>` : ''} ${canDel(a) ? `<button class="d" onclick="del('deleteAttendance','${a.id}')">حذف</button>` : ''}</span></div></div>`;
+  });
+  return h + (DB.attendance.length ? '' : '<p class="hint">لا توجد تسجيلات في هذا الشهر</p>');
+}
+let LAST = {in: '09:00', out: '17:00'};
+function fAtt() {
+  const emps = DB.employees.filter(e => e.active);
+  if (!emps.length) return toast('لا يوجد موظفون نشطون. أضفهم من ⚙');
+  openForm('تسجيل حضور / إجازة', [
+    {k:'emp_id', l:'الموظف', opts: emps.map(e => [e.id, e.name])},
+    {k:'date', l:'التاريخ', t:'date', v: today()},
+    {k:'type', l:'النوع', opts: Object.entries(TYPES)},
+    {k:'check_in', l:'وقت الحضور', t:'time', v: LAST.in, when: g => g('type') === 'work'},
+    {k:'check_out', l:'وقت الانصراف', t:'time', v: LAST.out, when: g => g('type') === 'work'},
+    {k:'break_min', l:'مدة الاستراحة (دقيقة)', t:'num', v: 0, when: g => g('type') === 'work'},
+    {k:'note', l:'ملاحظة'}
+  ], o => { LAST = {in: o.check_in, out: o.check_out}; act('addAttendance', o); });
+}
+
+/* ================= 2) PURCHASES ================= */
+function vBuy() {
+  const all = DB.purchases, tot = all.reduce((s, p) => s + Number(p.amount), 0), by = {};
+  all.forEach(p => by[p.grp] = (by[p.grp] || 0) + Number(p.amount));
+  const list = all.filter(p => !GF || p.grp === GF), groups = Object.keys(by);
+  return `<div class="top"><button class="p" style="width:100%" onclick="fBuy()">+ تسجيل مشتريات</button></div>
+  <div class="card kpi"><small>إجمالي مشتريات الشهر</small><b>${fmt(tot)} ${cur()}</b>${groups.map(g => `<div class="row"><small>${esc(g)}</small><small>${fmt(by[g])} (${tot ? Math.round(by[g] / tot * 100) : 0}%)</small></div>`).join('')}</div>
+  <div class="top"><select onchange="GF=this.value;render()"><option value="">كل المجموعات</option>${groups.map(g => `<option ${g === GF ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></div>` +
+  (list.map(p => `<div class="card"><div class="row"><b>${esc(p.item_name)}</b><b>${fmt(p.amount)} ${cur()}</b></div>
+  <div class="row"><small>${esc(p.date)} • ${esc(p.grp)} • ${fq(p.qty)} ${esc(p.unit)} × ${fmt(p.unit_price)}${p.supplier ? ' • ' + esc(p.supplier) : ''}</small>${canDel(p) ? `<button class="d" onclick="del('deletePurchase','${p.id}')">حذف</button>` : ''}</div></div>`).join('') || '<p class="hint">لا توجد مشتريات</p>');
+}
+function fBuy() {
+  const names = [...new Set(DB.inventory.map(i => i.name))], groups = DB.groups;
+  openForm('تسجيل مشتريات', [
+    {k:'date', l:'التاريخ', t:'date', v: today()},
+    {k:'grp', l:'مجموعة الشراء (خضار، لحوم، مشروبات…)', list: groups},
+    {k:'item_name', l:'اسم الصنف', list: names, on: (g, s) => {
+      const it = DB.inventory.find(i => i.name.trim().toLowerCase() === g('item_name').trim().toLowerCase());
+      if (it) { s('grp', it.grp); s('unit', it.unit); } }},
+    {k:'unit', l:'وحدة القياس', list: UNITS},
+    {k:'qty', l:'الكمية', t:'num'},
+    {k:'amount', l:'القيمة المالية الإجمالية (' + cur() + ')', t:'num'},
+    {k:'supplier', l:'المورد (اختياري)'}
+  ], o => act('addPurchase', o, 'تم التسجيل وإضافة الكمية للمخزون ✓'));
+}
+
+/* ================= 3) INVENTORY COUNT ================= */
+function vInv() {
+  const inv = DB.inventory, low = i => Number(i.min_qty) > 0 && Number(i.qty) <= Number(i.min_qty);
+  const val$ = inv.reduce((s, i) => s + i.qty * i.last_cost, 0), lows = inv.filter(low).length;
+  let h = `<div class="top"><button class="p" style="flex:1" onclick="startCount()">📋 بدء جرد</button><button class="s" onclick="fItem()">+ صنف</button></div>
+  <div class="grid"><div class="card kpi"><small>قيمة المخزون</small><b>${fmt(val$)}</b><small>${cur()}</small></div>
+  <div class="card kpi"><small>تحت الحد الأدنى</small><b class="${lows ? 'neg' : ''}">${lows}</b><small>من ${inv.length} صنف</small></div></div>` + seg('inv', [['items','الأصناف'], ['log','سجل الجرد']]);
+  if (SUB.inv === 'log') {
+    const tv = DB.counts.reduce((s, c) => s + Number(c.diff_value), 0);
+    return h + `<div class="card row"><span>صافي فروق الجرد هذا الشهر</span><b class="${cls(tv)}">${sgn(tv)}${fmt(tv)} ${cur()}</b></div>` +
+      (DB.counts.map(c => `<div class="card"><div class="row"><b>${esc(c.item_name)}</b><b class="${cls(c.diff)}">${sgn(c.diff)}${fq(c.diff)} ${esc(c.unit)}</b></div>
+      <div class="row"><small>${esc(c.date)} • نظام ${fq(c.system_qty)} ← فعلي ${fq(c.counted_qty)} • ${sgn(c.diff_value)}${fmt(c.diff_value)} • ${esc(c.by)}</small>${DB.me.role === 'owner' ? `<button class="d" onclick="del('deleteCount','${c.id}')">حذف</button>` : ''}</div></div>`).join('') || '<p class="hint">لا يوجد جرد هذا الشهر</p>');
+  }
+  const list = inv.filter(i => i.name.toLowerCase().includes(Q.toLowerCase())).sort((a, b) => (a.grp + a.name) > (b.grp + b.name) ? 1 : -1);
+  h += `<input placeholder="بحث عن صنف…" value="${esc(Q)}" oninput="Q=this.value;render();const e=document.querySelector('main input');e.focus();e.setSelectionRange(Q.length,Q.length)">`;
+  let g = '';
+  list.forEach(i => {
+    if (i.grp !== g) { g = i.grp; h += `<div class="gh">${esc(g)}</div>`; }
+    h += `<div class="card"><div class="row"><b>${esc(i.name)}</b><span class="${low(i) ? 'neg' : ''}">${fq(i.qty)} ${esc(i.unit)}</span></div>
+    <div class="row"><small>حد أدنى ${fq(i.min_qty)} • آخر سعر ${fmt(i.last_cost)} ${cur()}</small>${DB.me.role === 'owner' ? `<button class="d" onclick="del('deleteItem','${i.id}')">حذف الصنف</button>` : ''}</div></div>`;
+  });
+  return h + (list.length ? '' : '<p class="hint">لا توجد أصناف. تُضاف تلقائياً من المشتريات أو يدوياً.</p>');
+}
+function fItem() {
+  openForm('صنف جديد', [{k:'grp', l:'المجموعة', list: DB.groups}, {k:'name', l:'اسم الصنف'}, {k:'unit', l:'الوحدة', list: UNITS},
+    {k:'qty', l:'الكمية الحالية', t:'num', v: 0}, {k:'min_qty', l:'الحد الأدنى للتنبيه', t:'num', v: 0}, {k:'last_cost', l:'سعر الوحدة (' + cur() + ')', t:'num', v: 0}],
+    o => act('addItem', o));
+}
+function startCount() { if (!DB.inventory.length) return toast('لا توجد أصناف للجرد'); COUNTING = true; CNT = {}; CDATE = today(); CNOTE = ''; render(); window.scrollTo(0, 0); }
+function vCount() {
+  let h = `<div class="card"><b>جرد المخزون الفعلي</b><p class="hint">أدخل الكمية الموجودة فعلاً. الأصناف التي تتركها فارغة لن تتأثر.</p>
+  <label>تاريخ الجرد</label><input type="date" value="${esc(CDATE)}" onchange="CDATE=this.value"></div>`, g = '';
+  DB.inventory.slice().sort((a, b) => (a.grp + a.name) > (b.grp + b.name) ? 1 : -1).forEach(i => {
+    if (i.grp !== g) { g = i.grp; h += `<div class="gh">${esc(g)}</div>`; }
+    h += `<div class="card row"><div><b>${esc(i.name)}</b><br><small>النظام: ${fq(i.qty)} ${esc(i.unit)}</small></div>
+    <input inputmode="decimal" placeholder="الفعلي" style="width:110px;margin:0" value="${esc(CNT[i.id] || '')}" oninput="CNT['${i.id}']=this.value"></div>`;
+  });
+  return h + `<label>ملاحظة (اختياري)</label><input value="${esc(CNOTE)}" oninput="CNOTE=this.value">
+  <div class="top"><button class="p" style="flex:1" onclick="saveCount()">حفظ الجرد</button><button class="s" onclick="COUNTING=false;render()">إلغاء</button></div>`;
+}
+async function saveCount() {
+  const rows = Object.keys(CNT).filter(k => String(CNT[k]).trim() !== '').map(k => ({item_id: k, counted: CNT[k]}));
+  if (!rows.length) return toast('لم تُدخل أي كمية');
+  if (!confirm(`حفظ جرد ${rows.length} صنف؟ سيتم تحديث كميات المخزون.`)) return;
+  try { await call('addCounts', {date: CDATE, rows, note: CNOTE}); COUNTING = false; CNT = {}; SUB.inv = 'log'; toast('تم حفظ الجرد ✓'); await load(); }
+  catch (e) { fail(e); }
+}
+
+/* ================= 4) DAILY CASH ================= */
+function vCash() {
+  const C = DB.cash, s = k => C.reduce((a, c) => a + Number(c[k]), 0), dsum = s('diff');
+  return `<div class="top"><button class="p" style="width:100%" onclick="fCash()">+ جرد النقدية اليومي</button></div>
+  <div class="grid"><div class="card kpi"><small>مبيعات نقدية</small><b>${fmt(s('cash_sales'))}</b><small>${cur()}</small></div>
+  <div class="card kpi"><small>مبيعات بطاقات</small><b>${fmt(s('card_sales'))}</b><small>${cur()}</small></div>
+  <div class="card kpi"><small>مصروفات نقدية</small><b>${fmt(s('expenses'))}</b><small>${cur()}</small></div>
+  <div class="card kpi"><small>صافي العجز / الزيادة</small><b class="${cls(dsum)}">${sgn(dsum)}${fmt(dsum)}</b><small>${cur()}</small></div></div>` +
+  (C.map(c => `<div class="card"><div class="row"><b>${esc(c.date)}</b><b class="${cls(c.diff)}">${Number(c.diff) === 0 ? 'مطابق ✓' : sgn(c.diff) + fmt(c.diff)}</b></div>
+  <div class="row"><small>افتتاحي ${fmt(c.opening)} + نقدي ${fmt(c.cash_sales)} − مصروف ${fmt(c.expenses)} = متوقع ${fmt(c.expected)}</small></div>
+  <div class="row"><small>فعلي ${fmt(c.actual)} • مودَع ${fmt(c.deposit)} • رصيد الإقفال ${fmt(c.closing)} • بطاقات ${fmt(c.card_sales)} • ${esc(c.by)}</small>${canDel(c) ? `<button class="d" onclick="del('deleteCash','${c.id}')">حذف</button>` : ''}</div>${c.note ? `<small>${esc(c.note)}</small>` : ''}</div>`).join('') || '<p class="hint">لا يوجد جرد نقدية هذا الشهر</p>');
+}
+function fCash() {
+  const rows = DEN.map(d => `<div class="row"><span>${fmt(d)}</span><input class="dn" data-d="${d}" inputmode="numeric" placeholder="العدد" oninput="calcCash()" style="width:110px;margin:2px 0"></div>`).join('');
+  document.getElementById('sheet').innerHTML = `<div class="row"><b>جرد النقدية اليومي</b><button class="d" onclick="closeForm()">إغلاق</button></div>
+  <label>التاريخ</label><input id="c_date" type="date" value="${today()}">
+  <label>رصيد الافتتاح (إقفال آخر جرد) — ${cur()}</label><input id="c_open" inputmode="decimal" value="${DB.lastClosing}" oninput="calcCash()">
+  <label>المبيعات النقدية حسب الكاشير/POS</label><input id="c_cash" inputmode="decimal" oninput="calcCash()">
+  <label>المبيعات بالبطاقات</label><input id="c_card" inputmode="decimal">
+  <label>المصروفات المدفوعة نقداً من الدرج</label><input id="c_exp" inputmode="decimal" value="0" oninput="calcCash()">
+  <div class="card"><b>عدّ الأوراق النقدية</b>${rows}<label>عملات معدنية / أخرى (قيمة)</label><input id="c_other" inputmode="decimal" value="0" oninput="calcCash()"></div>
+  <div class="card" id="c_res"></div>
+  <label>المبلغ المودَع / المسحوب من الدرج بعد الجرد</label><input id="c_dep" inputmode="decimal" value="0" oninput="calcCash()">
+  <label>ملاحظة</label><input id="c_note"><button class="p" style="width:100%" onclick="saveCash()">حفظ</button>`;
+  document.getElementById('modal').style.display = 'flex'; calcCash();
+}
+function cashCalc() {
+  let t = 0; document.querySelectorAll('.dn').forEach(i => t += N(i.value) * Number(i.dataset.d)); t += N(val('c_other'));
+  const exp = N(val('c_open')) + N(val('c_cash')) - N(val('c_exp'));
+  return {actual: t, expected: exp, diff: t - exp, closing: t - N(val('c_dep'))};
+}
+function calcCash() {
+  const r = cashCalc();
+  document.getElementById('c_res').innerHTML = `<div class="row"><span>المتوقع</span><b>${fmt(r.expected)}</b></div><div class="row"><span>الفعلي (من العد)</span><b>${fmt(r.actual)}</b></div>
+  <div class="row"><span>الفرق</span><b class="${cls(r.diff)}">${sgn(r.diff)}${fmt(r.diff)}</b></div><div class="row"><span>رصيد الإقفال</span><b>${fmt(r.closing)}</b></div>`;
+}
+function saveCash() {
+  const denoms = {}; document.querySelectorAll('.dn').forEach(i => { if (N(i.value)) denoms[i.dataset.d] = i.value; });
+  const r = cashCalc();
+  if (r.diff !== 0 && !confirm(`يوجد فرق ${sgn(r.diff)}${fmt(r.diff)} ${cur()}. حفظ على أي حال؟`)) return;
+  act('addCash', {date: val('c_date'), opening: val('c_open'), cash_sales: val('c_cash'), card_sales: val('c_card'), expenses: val('c_exp'),
+    denoms, other: val('c_other'), deposit: val('c_dep'), note: val('c_note')});
+}
+
+/* ================= SETTINGS (owner) ================= */
+function fSettings() {
+  const S = DB.S;
+  const emps = DB.employees.map(e => `<div class="card"><div class="row"><b>${esc(e.name)}</b><small>${esc(e.position)} • أجر الساعة ≈ ${fmt(e.rate)}</small></div>
+  <label>الراتب الشهري (${cur()})</label><input id="sal_${e.id}" inputmode="decimal" value="${e.monthly_salary || 0}">
+  <div class="row"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="act_${e.id}" ${e.active ? 'checked' : ''} style="width:auto;margin:0"> نشط</label><button class="s" onclick="saveEmp('${e.id}')">حفظ</button></div></div>`).join('');
+  document.getElementById('sheet').innerHTML = `<div class="row"><b>⚙ الإعدادات</b><button class="d" onclick="closeForm()">إغلاق</button></div>
+  <div class="gh">الموظفون</div>${emps || '<p class="hint">لا يوجد موظفون</p>'}
+  <div class="card"><b>إضافة موظف</b><label>الاسم</label><input id="ne_name"><label>الوظيفة</label><input id="ne_pos"><label>الراتب الشهري</label><input id="ne_sal" inputmode="decimal"><button class="p" onclick="addEmp()">إضافة</button></div>
+  <div class="gh">قواعد الحساب</div>
+  <label>ساعات العمل القياسية يومياً</label><input id="s_std" inputmode="decimal" value="${S.std_hours}">
+  <label>معامل الإضافي (1.5 = ساعة ونصف)</label><input id="s_ot" inputmode="decimal" value="${S.ot_mult}">
+  <label>أيام العمل في الشهر (لحساب أجر الساعة)</label><input id="s_days" inputmode="decimal" value="${S.work_days}">
+  <label>الإجازة السنوية/المرضية مدفوعة؟</label><select id="s_pay"><option value="1" ${S.pay_leave ? 'selected' : ''}>نعم</option><option value="0" ${S.pay_leave ? '' : 'selected'}>لا</option></select>
+  <label>هل يرى مسؤول المطعم الرواتب والتكلفة؟</label><select id="s_mgr"><option value="0" ${S.manager_sees_cost ? '' : 'selected'}>لا (المالك فقط)</option><option value="1" ${S.manager_sees_cost ? 'selected' : ''}>نعم</option></select>
+  <label>رمز العملة</label><input id="s_cur" value="${esc(S.currency)}"><button class="p" style="width:100%" onclick="saveSet()">حفظ القواعد</button>`;
+  document.getElementById('modal').style.display = 'flex';
+}
+function saveEmp(id) { act('updateEmployee', {id, monthly_salary: val('sal_' + id), active: document.getElementById('act_' + id).checked}, 'تم التحديث ✓'); }
+function addEmp() { act('addEmployee', {name: val('ne_name'), position: val('ne_pos'), monthly_salary: val('ne_sal')}, 'تمت الإضافة ✓'); }
+function saveSet() { act('saveSettings', {std_hours: val('s_std'), ot_mult: val('s_ot'), work_days: val('s_days'), pay_leave: val('s_pay'), manager_sees_cost: val('s_mgr'), currency: val('s_cur')}); }
+
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  TAB = b.dataset.t; Q = ''; GF = ''; document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b)); if (DB) render();
+});
+load();
+</script>
+</body>
+</html>
